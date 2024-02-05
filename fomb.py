@@ -8,7 +8,7 @@ start_time = time.time()
 
 def grab_links(browser):
     links = []
-    rows = browser.find_elements(By.CSS_SELECTOR, "#docsDataTable tbody tr")
+    rows = browser.find_elements(By.CSS_SELECTOR, "#docuDataTable tbody tr")
     for row in rows:
         link_element = row.find_element(By.TAG_NAME, 'a')
         href_value = link_element.get_attribute('href')
@@ -34,12 +34,12 @@ browser.get('https://juntasupervision.pr.gov/documents/')
 try:
     # Set display to 100 rows per page
     dropdown = WebDriverWait(browser, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "#docsDataTable_length select"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, "#docuDataTable_length > label:nth-child(1) > select:nth-child(1)"))
     )
     dropdown.click()
 
     option_100 = WebDriverWait(browser, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, "#docsDataTable_length option[value='100']"))
+        EC.element_to_be_clickable((By.CSS_SELECTOR, "#docuDataTable_length > label:nth-child(1) > select:nth-child(1) > option:nth-child(4)"))
     )
     option_100.click()
 
@@ -55,20 +55,18 @@ try:
     # Loop through pages
     for _ in range(1, last_page + 1):
         links_on_page = grab_links(browser)
+        print(links_on_page)
         new_links.update(set(links_on_page) - already_seen)
 
         try:
             next_button = WebDriverWait(browser, 10).until(
-                EC.element_to_be_clickable((By.ID, "docsDataTable_next"))
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "#docuDataTable_next"))
             )
             next_button.click()
             time.sleep(2)  # Adding a delay for the page to load
         except Exception as e:
             print(f"Error clicking next button: {str(e)}")
             break
-
-    # Filter out links that were already seen
-    new_links = new_links - already_seen
 
     # Save new links to a file named "new.txt"
     write_to_file("new.txt", new_links)
